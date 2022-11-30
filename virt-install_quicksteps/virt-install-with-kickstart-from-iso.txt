@@ -1,0 +1,118 @@
+
+
+====================================================
+Generate an encrypted password for kickstart script:
+====================================================
+
+# python -c 'import crypt,getpass;pw=getpass.getpass();print(crypt.crypt(pw) if (pw==getpass.getpass("Confirm: ")) else exit())'
+Password: password123
+Confirm: password123
+$6$yceqZOU2ece4bB9I$exDKnog7LIrCmpb4yU9RYAIBnR6dT64Hsn3l8L.jraHCrtVUqS9HP5eBHrPe.AUsAQJIEb5QTTZWU31QT0uV01  << # paste into ks.cfg
+
+///////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\
+        S A M P L E ks.cfg F O L L O W S
+///////////////////////\\\\\\\\\\\\\\\\\\\\\\\\\\\
+
+#############################################
+# rhel8 minimal install ks.cfg
+# Red Hat Customer Portal Kickstart Generator
+#############################################
+#
+#
+# choose language and keyboard English US
+lang en_US
+keyboard us
+
+# choose timezone
+timezone America/New_York --isUtc
+
+# set root password [P@ssw0rd!]
+rootpw  --iscrypted
+
+# add user [password123]
+user --groups=wheel --name=sysuser --password=$6$yceqZOU2ece4bB9I$exDKnog7LIrCmpb4yU9RYAIBnR6dT64Hsn3l8L.jraHCrtVUqS9HP5eBHrPe.AUsAQJIEb5QTTZWU31QT0uV01 --iscrypted --gecos="System User"
+
+# reboot when installation completed
+reboot
+
+# text-based installer
+text
+
+# install from local CD-ROM/DVD-ROM/ISO file
+cdrom
+
+# Disk initialization, partitioning, boot options
+bootloader --append="rhgb quiet crashkernel=auto"
+zerombr
+clearpart --all --initlabel
+autopart
+
+# authentication option:  local
+auth --passalgo=sha512 --useshadow
+
+# do not initialize graphical environement
+skipx
+
+# do not execute first boot startup scripts
+firstboot --disable
+
+# SELinux set to enabled, enforcing
+selinux --enforcing
+
+# firewall set to enabled
+firewall --enabled
+
+# install the following software
+# environments, groups, packages
+%packages
+@^minimal-environment
+kexec-tools
+
+# End of installation
+%end
+
+
+========================================
+Local DVD-based repo file:
+https://access.redhat.com/solutions/7227
+========================================
+
+cat /etc/yum.repos.d/rhel_dvd.repo  **EXAMPLE**
+
+[rhel-8.2-for-x86_64-baseos-rpms]
+baseurl = http://content.example.com/rhel8.2/x86_64/dvd/BaseOS
+enabled = true
+gpgcheck = false
+name = Red Hat Enterprise Linux 8.2 BaseOS (dvd)
+
+[rhel-8.2-for-x86_64-appstream-rpms]
+baseurl = http://content.example.com/rhel8.2/x86_64/dvd/AppStream
+enabled = true
+gpgcheck = false
+name = Red Hat Enterprise Linux 8.2 AppStream (dvd)
+
+
+==========================
+>> Execute virt-install <<
+==========================
+
+virt-install \
+--name demo-r8 \
+--memory 2048 \
+--vcpus 2 \
+--disk size=10 \
+--os-variant rhel8.0 \
+--location /home/user/rhel-8.6-x86_64-dvd.iso \
+--graphics none --extra-args="tty0 console=ttyS0,115200n8"
+
+
+virt-install \
+--name demo-r86-2 \
+--memory 2048 \
+--vcpus 2 \
+--disk size=10 \
+--os-variant rhel8.0 \
+--location /home/user/rhel-8.6-x86_64-dvd.iso \
+--graphics none \
+--initrd-inject /home/user/ks-rh8min.cfg \
+--extra-args="inst.ks=file:/ks-rh8min.cfg console=ttyS0,115200n8"

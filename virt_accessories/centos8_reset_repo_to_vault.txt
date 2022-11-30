@@ -1,0 +1,7 @@
+===============================================
+Reset CentOS 8 repositories to vault.centos.org
+===============================================
+
+cd /etc/yum.repos.d/
+sudo sed -i 's/mirrorlist/#mirrorlist/g' CentOS-*
+sudo sed -i 's|#baseurl=http://mirror.centos.org|baseurl=http://vault.centos.org|g' CentOS-*

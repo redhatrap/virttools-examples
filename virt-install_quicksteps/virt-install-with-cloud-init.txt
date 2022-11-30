@@ -1,0 +1,60 @@
+# virt-install *import* using prepared cloud qcow2 image
+# copied to vm images location
+#
+virt-install \
+--name vm01 \
+--memory 1024 \
+--vcpus 2 \
+--graphics none \
+--os-variant detect=on \
+--import \
+--disk vm01.qcow2,size=20 \
+--graphics none \
+--console pty,target_type=virtio \
+--serial pty \
+--cloud-init user-data=/home/user/cloudinit/user-data
+
+
+Example 1:  File contents:  user-data
+
+# user-data
+# create non-root, sudo-enabled user
+system_info:
+  default_user:
+    name: "admin"
+    plain_text_passwd: "password"
+    lock_passwd: false
+    groups: ["wheel"]
+
+
+Example 2:  File contents:  user-data2
+
+# user-data2
+# declare hostname to replace default cloud image hostname
+# create the initial admin user
+# auto-install additional packages
+# create required files, set permissions
+
+preserve_hostname: false
+fqdn: "vm01"
+
+system_info:
+  default_user:
+    name: "admin"
+    plain_text_passwd: "password"
+    lock_passwd: false
+    groups: ["wheel"]
+
+packages:
+  - "wget"
+  - "bash-completion"
+
+package_update: true
+package_reboot_if_required: true
+
+write_files:
+  - path: "/root/hello.txt"
+    owner: "root:root"
+    permissions: '0644'
+    content: "Hello World!"
+

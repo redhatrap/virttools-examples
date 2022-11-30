@@ -1,0 +1,114 @@
+EXAMPLE USES OF virt-builder
+----------------------------
+
+Determine which OS's are avaiable:
+
+$ virt-builder -l
+
+
+
+NOTES:
+- if any changes are made to the image contents, such as:
+  * adding users and passords
+  * setting root-password
+  * adding packages or package groups
+EXECUTE --selinux-relabel  !!
+
+Basic:
+
+virt-builder centosstream-8 \
+-o srv1 \
+--format qcow2 \
+--size 10G \
+--hostname rhel8-server1.local.lan \
+--root-password password:redhat \
+--selinux-relabel
+
+===================================================
+Options to define the Ansible user and a public key
+===================================================
+
+--ssh-inject "$USER:file:/home/$USER/.ssh/id_yubikey.pub" \
+--ssh-inject "ansible:string:ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIDqvPTlpML0fgCQ2R0XEGIG4Q75Mw075WHf4t00vMQyA ansible@controlnode.example.com
+
+
+=======================================================================================================
+Add a user, set wheel group membership, and set blank temporary password that expires before first use.
+=======================================================================================================
+
+virt-builder centosstream-8 \
+-o srv1 \
+--format qcow2 \
+--size 10G \
+--hostname rhel8-server1.example.com \
+--root-password password:redhat \
+--update \
+--firstboot-command 'useradd -m -p "" ansible ; chage -d 0 ansible ; gpasswd -a ansible wheel' \
+--selinux-relabel 
+
+
+virt-builder centos-7.8 \
+-o srv71 \
+--format qcow2 \
+--size 10G \
+--hostname rhel7-server1.example.com \
+--root-password password:redhat \
+--update \
+--firstboot-command 'useradd -m -p "" ansible ; chage -d 0 ansible ; gpasswd -a ansible wheel' \
+--selinux-relabel 
+
+
+virt-builder centos-7.8 \
+-o srv72 \
+--format qcow2 \
+--size 10G \
+--hostname rhel7-server2.example.com \
+--root-password password:redhat \
+--update \
+--firstboot-command 'useradd -m -p "" ansible ; chage -d 0 ansible ; gpasswd -a ansible wheel' \
+--selinux-relabel
+
+
+=============================
+Build an Ansible control-node
+=============================
+
+virt-builder centosstream-8 \
+-o cnode \
+--format qcow2 \
+--size 20G \
+--hostname control-node.local.lan \
+--root-password password:redhat \
+--update \
+--install ansible-core rhel-system-roles \
+--firstboot-command 'useradd -m -p "" ansible ; chage -d 0 ansible ; gpasswd -a ansible wheel' \
+--selinux-relabel
+
+=============
+Client Node 1
+=============
+virt-builder centosstream-8 \
+-o srv1 \
+--format qcow2 \
+--size 10G \
+--update \
+--hostname rhel8-server1.local.lan \
+--root-password password:redhat \
+--firstboot-command 'useradd -m -p "" ansible ; chage -d 0 ansible' \
+--selinux-relabel
+
+=============
+Client Node 2
+=============
+virt-builder centosstream-8 \
+-o srv2 \
+--format qcow2 \
+--size 10G \
+--update \
+--hostname rhel8-server2.local.lan \
+--root-password password:redhat \
+--firstboot-command 'useradd -m -p "" ansible ; chage -d 0 ansible' \
+--selinux-relabel
+
+
+

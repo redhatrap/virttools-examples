@@ -1,0 +1,113 @@
+BASIC virt-install USAGE EXAMPLES:
+
+Notes:  
+- virt-install can be run as root or as a non-root user.
+- when run as root, VMs are created in the default VM image store location
+  (typically /var/lib/libvirt/images for Red Hat & derivative distributions)
+- when run as a non-root user, VMs are created in the usermode KVM image store
+  (typically /home/username/.local/share/gnome-boxes/images)
+
+Install a virtual machine from an ISO image
+-------------------------------------------
+
+virt-install \ 
+--name guest1-rhel7 \ 
+--memory 2048 \ 
+--vcpus 2 \ 
+--disk size=8 \ 
+--cdrom /path/to/rhel7.iso \ 
+--os-variant rhel7
+
+virt-install \
+--name rhel86vi \
+--ram 2048 \
+--vcpus 2 \
+--os-variant rhel8.5 \
+--network default \
+--graphics vnc \
+--cdrom /path/to/rhel-8.iso
+
+***********************************************
+Values for os-variant obtained from results of:
+# osinfo-query os
+***********************************************
+Useful optional parameters:
+--boot uefi   #virt-install defaults to BIOS boot.
+
+==============================================================
+Import a virtual machine image
+(assume imported image was converted from non-qcow2 format, or
+ may have been created using virt-builder
+==============================================================
+
+virt-install \ 
+--name guest1-rhel7 \ 
+--memory 2048 \ 
+--vcpus 2 \ 
+--disk /path/to/imported/disk.qcow \ 
+--import \ 
+--os-variant rhel7
+
+
+==========================================
+Install a virtual machine from the network
+==========================================
+
+virt-install \
+--name guest1-rhel7 \ 
+--memory 2048 \ 
+--vcpus 2 \ 
+--disk size=8 \ 
+--location http://example.com/path/to/os \ 
+--os-variant rhel7
+
+
+========================================
+Install a virtual machine with Kickstart
+========================================
+
+virt-install \ 
+--name guest1-rhel7 \
+--memory 2048 \ 
+--vcpus 2 \ 
+--disk size=8 \ 
+--location http://example.com/path/to/os \ 
+--os-variant rhel7 \
+--initrd-inject /path/to/ks.cfg \ 
+--extra-args="ks=file:/ks.cfg console=tty0 console=ttyS0,115200n8"
+
+
+NETWORKING:
+-----------
+
+To specify the 'default' network with NAT:
+
+--network default
+
+
+Bridged network with DHCP
+
+--network br0
+
+Bridged network with Static IP
+
+--network br0 \
+--extra-args "ip=192.168.1.2::192.168.1.1:255.255.255.0:test.example.com:eth0:none"
+
+
+==============================================================================
+Create VM using kickstart, append ttyS0 console type for serial console access
+==============================================================================
+
+virt-install \
+--name demo-guest4 \
+--memory 2048 \
+--vcpus 2 \
+--disk size=160 \
+--os-variant rhel8.0 \
+--location http://example.com/OS-install \
+--initrd-inject /home/username/ks.cfg \
+--extra-args="inst.ks=file:/ks.cfg console=tty0 console=ttyS0,115200n8"
+
+
+
